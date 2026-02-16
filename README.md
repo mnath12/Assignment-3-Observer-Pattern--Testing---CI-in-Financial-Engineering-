@@ -135,6 +135,22 @@ The test suite includes:
 
 ## Design Decisions
 
+### Observer Pattern Implementation
+
+The Observer pattern is implemented using Python's `Protocol` for type safety:
+
+- **Subject (`MarketDataSubject`)**: Maintains a list of observers and provides `attach()`, `detach()`, and `notify()` methods
+- **Observer Protocol**: Defines the interface that all observers must implement (`update(price: float)`)
+- **Concrete Observers**: 
+  - `VolatilityBreakoutStrategyObserver`: Implements trading signal generation
+  - `RiskObserver`: Monitors position limits
+  - `LoggerObserver`: Records all price updates
+
+**Key Design Choices:**
+- Observers are notified in the order they were attached
+- Duplicate observers are prevented (same observer instance cannot be attached twice)
+- Detaching a non-attached observer is safe (no error raised)
+
 ### Observer Failure Handling
 
 When an observer's `update()` method raises an exception:
@@ -155,12 +171,29 @@ The `RiskObserver` is designed to be checked after position updates, not during 
 - Risk checks to be performed with full context (position + price)
 - Flexible risk monitoring strategies
 
+## Test Coverage
+
+The project maintains **100% code coverage** (exceeding the ≥90% requirement):
+
+- All components are fully tested
+- Edge cases are covered (invalid inputs, insufficient funds, etc.)
+- Failure modes are tested (observer exceptions, order failures)
+- Integration tests verify the Observer pattern interactions
+
+Run coverage locally:
+```bash
+coverage run -m pytest
+coverage report
+coverage html  # Generates htmlcov/index.html
+```
+
 ## CI/CD
 
 The GitHub Actions workflow (`.github/workflows/ci.yml`) automatically:
-- Runs tests on every push and pull request
-- Enforces ≥90% code coverage
+- Runs tests on every push and pull request to `main`, `master`, or `develop` branches
+- Enforces ≥90% code coverage (currently at 100%)
 - Tests on Python 3.11
+- Fails the build if coverage drops below 90%
 
 ## Requirements
 
